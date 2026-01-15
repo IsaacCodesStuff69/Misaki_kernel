@@ -59,7 +59,7 @@ def _write_localversion(ctx):
         stable_scmversion_cmd = _get_status_at_path(ctx, "STABLE_SCMVERSIONS", '"${KERNEL_DIR}"')
     else:
         inputs = []
-        stable_scmversion_cmd = "echo '-maybe-dirty'"
+        stable_scmversion_cmd = "echo ''"
 
     transitive_inputs = [ctx.attr.env[KernelEnvInfo].inputs]
     tools = ctx.attr.env[KernelEnvInfo].tools
@@ -70,13 +70,9 @@ def _write_localversion(ctx):
             # and clear the variable $android_release
             set +e
             if [[ "$BRANCH" == "android-mainline" ]]; then
-                android_release="mainline"
+                android_release=""
             else
-                android_release=$(echo "$BRANCH" | sed -e '/android[0-9]\\{{2,\\}}/!{{q255}}; s/^\\(android[0-9]\\{{2,\\}}\\)-.*/\\1/')
-                if [[ $? -ne 0 ]]; then
-                    echo "WARNING: Cannot extract android_release from BRANCH ${{BRANCH}}." >&2
-                    android_release=
-                fi
+                android_release=""
             fi
             set -e
             if [[ -n "$KMI_GENERATION" ]] && [[ $(expr $KMI_GENERATION : '^[0-9]\\+$') -eq 0 ]]; then
@@ -91,7 +87,7 @@ def _write_localversion(ctx):
             elif [[ -n "$android_release" ]]; then
                 scmversion_prefix="-$android_release"
             fi
-            scmversion="${{scmversion_prefix}}${{stable_scmversion}}"
+            scmversion="${{stable_scmversion}}"
             echo $scmversion
         ) > {out_path}
     """.format(
